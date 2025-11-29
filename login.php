@@ -1,3 +1,35 @@
+<?php
+    session_start();
+    include 'php/db.php';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $username = trim($_POST['username']);
+        $password = trim($_POST['password']);
+
+        if (!$username || !$password) {
+            echo "<script>alert('Please fill in all fields.');</script>";
+        } else {
+            $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ? LIMIT 1");
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+
+            if ($user) {
+                if (password_verify($password, $user['password'])) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    header("Location: index.php");
+                    exit;
+                } else {
+                    echo "<script>alert('Invalid username or password.');</script>";
+                }
+            } else {
+                echo "<script>alert('Invalid username or password.');</script>";
+            }
+        }
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,20 +53,18 @@
         <div class="card card-custom p-4" style="width: 370px;">
             <h3 class="text-center mb-3 text-light fw-bold">Login</h3>
 
-            <form>
+            <form method="POST">
                 <div class="mb-3">
                     <label class="form-label text-light">Username</label>
-                    <input type="text" class="form-control form-control-dark" required>
+                    <input type="text" name="username" class="form-control form-control-dark" required>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label text-light">Password</label>
-                    <input type="password" class="form-control form-control-dark" required>
+                    <input type="password" name="password" class="form-control form-control-dark" required>
                 </div>
 
-                <button class="btn btn-primary w-100" type="button">
-                    Login
-                </button>
+                <button class="btn btn-primary w-100">Login</button>
 
                 <p class="text-center mt-2">
                     <span class="text-muted">Don't have an account?</span>
@@ -43,7 +73,6 @@
             </form>
         </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
