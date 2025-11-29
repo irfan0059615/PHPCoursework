@@ -1,0 +1,113 @@
+html, body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #1b1b1b;
+    color: white;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.card {
+    background-color: #1b1b1b;
+    color: white;
+    border: 1px solid #444;
+}
+
+.custom-bg {
+    background-color: #1b1b1b;
+    color: white;
+}
+
+.center-card {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.form-control {
+    background: #1b1b1b;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control-dark {
+    background: #1b1b1b;
+    padding: 10px;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.custom-search-input {
+    background: rgb(59, 59, 59);
+    padding: 10px;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.custom-search-input:focus {
+    background: rgba(59, 59, 59, 0.548);
+    color: #fff;
+}
+
+.form-control-dark:focus {
+    background: rgba(36, 36, 36, 0.288);
+    color: #fff;
+}
+
+.text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.custom-text-info {
+    color: #eeeeee;
+    font-weight: 530;
+}
+
+.modal-content {
+    background: #1b1b1b;
+    color: #fff;
+}
+
+.table thead th {
+    color: #0b0f13;
+    background: #fff;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: rgb(85, 30, 136);
+    border: 0;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: rgb(100, 40, 150);
+    color: white;
+}
+
+.btn-primary:focus {
+    background: rgb(70, 20, 120);
+    color: white;
+}
+
+.btn-outline-secondary {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+@media (max-width: 576px) {
+    .center-card {
+        margin: 0 8px;
+    }
+
+    .table thead th {
+        font-size: 13px;
+    }
+}
