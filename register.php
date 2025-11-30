@@ -6,39 +6,55 @@
     $success = "";
 
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        $username = trim($_POST["username"]);
-        $password = trim($_POST["password"]);
-        $confirm  = trim($_POST["confirm"]);
+        $recaptcha = $_POST['g-recaptcha-response'] ?? '';
 
-        if (!$username || !$password || !$confirm) {
-            $error = "All fields are required.";
-        } elseif ($password !== $confirm) {
-            $error = "Passwords do not match.";
-        } elseif (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
-            $error = "Password must be at least 8 chars, with uppercase, lowercase, number, and special char.";
+        if (!$recaptcha) {
+            $error = "Please verify the CAPTCHA.";
         } else {
-            $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $secretKey = "6LcJ9xwsAAAAALWyqpJvQ7FryTqrHCpJejr0f7h6";
+            $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$recaptcha");
+            $responseData = json_decode($response);
 
-            if ($result->num_rows > 0) {
-                $error = "Username already taken.";
-            } else {
-                $hashed = password_hash($password, PASSWORD_DEFAULT);
-
-                $insert = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-                $insert->bind_param("ss", $username, $hashed);
-
-                if ($insert->execute()) {
-                    $success = "Account created successfully! You can now log in.";
-                } else {
-                    $error = "Something went wrong. Please try again.";
-                }
+            if (!$responseData->success) {
+                $error = "CAPTCHA verification failed.";
             }
+        }
 
-            $stmt->close();
-            if (isset($insert)) $insert->close();
+        if (!$error) {
+            $username = trim($_POST["username"]);
+            $password = trim($_POST["password"]);
+            $confirm  = trim($_POST["confirm"]);
+
+            if (!$username || !$password || !$confirm) {
+                $error = "All fields are required.";
+            } elseif ($password !== $confirm) {
+                $error = "Passwords do not match.";
+            } elseif (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/", $password)) {
+                $error = "Password must be at least 8 chars, with uppercase, lowercase, number, and special char.";
+            } else {
+                $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? LIMIT 1");
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if ($result->num_rows > 0) {
+                    $error = "Username already taken.";
+                } else {
+                    $hashed = password_hash($password, PASSWORD_DEFAULT);
+
+                    $insert = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+                    $insert->bind_param("ss", $username, $hashed);
+
+                    if ($insert->execute()) {
+                        $success = "Account created successfully! You can now log in.";
+                    } else {
+                        $error = "Something went wrong. Please try again.";
+                    }
+                }
+
+                $stmt->close();
+                if (isset($insert)) $insert->close();
+            }
         }
 
         if ($error) {
@@ -91,6 +107,8 @@
                     <input type="password" name="confirm" id="confirm" class="form-control form-control-dark" required>
                 </div>
 
+                <div class="g-recaptcha mb-3" data-sitekey="6LcJ9xwsAAAAACrVR2j_q8678iIG3rSGNI4wuQDV"></div>
+
                 <button class="btn btn-primary w-100">Create Account</button>
 
                 <p class="text-center mt-2">
@@ -102,6 +120,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
