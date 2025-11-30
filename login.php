@@ -3,6 +3,22 @@
     include 'php/db.php';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $recaptcha = $_POST['g-recaptcha-response'];
+
+        if (!$recaptcha) {
+            echo "<script>alert('Please verify that you are not a robot.');</script>";
+            exit;
+        }
+
+        $secretKey = "6LcJ9xwsAAAAALWyqpJvQ7FryTqrHCpJejr0f7h6";
+        $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$recaptcha");
+        $responseData = json_decode($response);
+
+        if (!$responseData->success) {
+            echo "<script>alert('reCAPTCHA verification failed.');</script>";
+            exit;
+        }
+
         $username = trim($_POST['username']);
         $password = trim($_POST['password']);
 
@@ -14,15 +30,11 @@
             $stmt->execute();
             $user = $stmt->get_result()->fetch_assoc();
 
-            if ($user) {
-                if (password_verify($password, $user['password'])) {
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['username'] = $user['username'];
-                    header("Location: index.php");
-                    exit;
-                } else {
-                    echo "<script>alert('Invalid username or password.');</script>";
-                }
+            if ($user && password_verify($password, $user['password'])) {
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['username'] = $user['username'];
+                header("Location: index.php");
+                exit;
             } else {
                 echo "<script>alert('Invalid username or password.');</script>";
             }
@@ -64,15 +76,14 @@
                     <input type="password" name="password" class="form-control form-control-dark" required>
                 </div>
 
-                <button class="btn btn-primary w-100">Login</button>
+                <div class="g-recaptcha mb-3" data-sitekey="6LcJ9xwsAAAAACrVR2j_q8678iIG3rSGNI4wuQDV"></div>
 
-                <p class="text-center mt-2">
-                    <span class="text-muted">Don't have an account?</span>
-                    <a href="register.php" class="text-decoration-none custom-text-info">Register</a>
-                </p>
+                <button class="btn btn-primary w-100">Login</button>
+                <p class="text-center mt-2"> <span class="text-muted">Don't have an account?</span> <a href="register.php" class="text-decoration-none custom-text-info">Register</a> </p>
             </form>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>
