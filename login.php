@@ -1,89 +1,60 @@
 <?php
     session_start();
+
     include 'php/db.php';
+    include 'php/twig.php';
+
+    $error = null;
+
+    if (isset($_SESSION['username'])) {
+        header('Location: index.php');
+        exit;
+    }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $recaptcha = $_POST['g-recaptcha-response'];
 
-        if (!$recaptcha) {
-            echo "<script>alert('Please verify that you are not a robot.');</script>";
-            exit;
-        }
-
-        $secretKey = "6LcJ9xwsAAAAALWyqpJvQ7FryTqrHCpJejr0f7h6";
-        $response = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$recaptcha");
-        $responseData = json_decode($response);
-
-        if (!$responseData->success) {
-            echo "<script>alert('reCAPTCHA verification failed.');</script>";
-            exit;
-        }
-
-        $username = trim($_POST['username']);
-        $password = trim($_POST['password']);
-
-        if (!$username || !$password) {
-            echo "<script>alert('Please fill in all fields.');</script>";
+        if (empty($_POST['g-recaptcha-response'])) {
+            $error = 'Please verify that you are not a robot.';
         } else {
-            $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE username = ? LIMIT 1");
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $user = $stmt->get_result()->fetch_assoc();
+            $secretKey = '6LcJ9xwsAAAAALWyqpJvQ7FryTqrHCpJejr0f7h6';
+            $recaptcha = $_POST['g-recaptcha-response'];
 
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['username'] = $user['username'];
-                header("Location: index.php");
-                exit;
+            $response = file_get_contents(
+                "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$recaptcha"
+            );
+
+            $responseData = json_decode($response);
+
+            if (!$responseData->success) {
+                $error = 'reCAPTCHA verification failed.';
             } else {
-                echo "<script>alert('Invalid username or password.');</script>";
+                $username = trim($_POST['username']);
+                $password = trim($_POST['password']);
+
+                if (!$username || !$password) {
+                    $error = 'Please fill in all fields.';
+                } else {
+                    $stmt = $conn->prepare(
+                        'SELECT id, username, password FROM users WHERE username = ? LIMIT 1'
+                    );
+                    $stmt->bind_param('s', $username);
+                    $stmt->execute();
+                    $user = $stmt->get_result()->fetch_assoc();
+
+                    if ($user && password_verify($password, $user['password'])) {
+                        $_SESSION['user_id'] = $user['id'];
+                        $_SESSION['username'] = $user['username'];
+                        header('Location: index.php');
+                        exit;
+                    } else {
+                        $error = 'Invalid username or password.';
+                    }
+                }
             }
         }
     }
+
+    echo $twig->render('login.twig', [
+        'error' => $error
+    ]);
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/style.css">
-    <title>Login - BookVerse</title>
-</head>
-
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark custom-bg border-bottom border-secondary">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="index.php">BookVerse</a>
-        </div>
-    </nav>
-
-    <div class="d-flex align-items-center justify-content-center py-5">
-        <div class="card card-custom p-4" style="width: 370px;">
-            <h3 class="text-center mb-3 text-light fw-bold">Login</h3>
-
-            <form method="POST">
-                <div class="mb-3">
-                    <label class="form-label text-light">Username</label>
-                    <input type="text" name="username" class="form-control form-control-dark" required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-light">Password</label>
-                    <input type="password" name="password" class="form-control form-control-dark" required>
-                </div>
-
-                <div class="g-recaptcha mb-3" data-sitekey="6LcJ9xwsAAAAACrVR2j_q8678iIG3rSGNI4wuQDV"></div>
-
-                <button class="btn btn-primary w-100">Login</button>
-                <p class="text-center mt-2"> <span class="text-muted">Don't have an account?</span> <a href="register.php" class="text-decoration-none custom-text-info">Register</a> </p>
-            </form>
-        </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-</body>
-</html>
