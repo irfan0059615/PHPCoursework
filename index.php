@@ -3,13 +3,13 @@
     include 'php/db.php';
     include 'php/twig.php';
     
-    $user = $_SESSION['username'];
     
     if (!isset($_SESSION['username'])) {
         header('Location: login.php');
         exit;
     }
-
+    
+    $user = $_SESSION['username'];
     $user_id = $_SESSION['user_id'];
 
     $stmt = $conn->prepare("SELECT * FROM books_table WHERE user_id=? ORDER BY id DESC");
