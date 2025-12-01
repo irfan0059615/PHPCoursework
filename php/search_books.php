@@ -7,7 +7,7 @@
     $books = [];
 
     if ($search) {
-        $stmt = $conn->prepare("SELECT * FROM books WHERE user_id = ? AND (title LIKE ? OR author LIKE ? OR genre LIKE ?) ORDER BY id DESC");
+        $stmt = $conn->prepare("SELECT * FROM books_table WHERE user_id = ? AND (title LIKE ? OR author LIKE ? OR genre LIKE ?) ORDER BY id DESC");
         $like = "%$search%";
         $stmt->bind_param("ssss", $user_id, $like, $like, $like);
         $stmt->execute();
@@ -19,7 +19,7 @@
         }
 
     } else {
-        $stmt = $conn->prepare("SELECT * FROM books WHERE user_id = ? ORDER BY id DESC");
+        $stmt = $conn->prepare("SELECT * FROM books_table WHERE user_id = ? ORDER BY id DESC");
         $stmt->bind_param("s", $user_id);
         $stmt->execute();
 

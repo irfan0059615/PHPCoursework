@@ -12,7 +12,7 @@
 
     $user_id = $_SESSION['user_id'];
 
-    $stmt = $conn->prepare("SELECT * FROM books WHERE user_id=? ORDER BY id DESC");
+    $stmt = $conn->prepare("SELECT * FROM books_table WHERE user_id=? ORDER BY id DESC");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
     $result = $stmt->get_result();

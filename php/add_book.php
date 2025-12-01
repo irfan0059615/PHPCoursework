@@ -28,7 +28,7 @@
         $year = null;
     }
 
-    $stmt = $conn->prepare("INSERT INTO books (user_id, title, author, genre, published_year, updated_on) VALUES (?, ?, ?, ?, ?, NOW())");
+    $stmt = $conn->prepare("INSERT INTO books_table (user_id, title, author, genre, published_year, updated_on) VALUES (?, ?, ?, ?, ?, NOW())");
     $stmt->bind_param("isssi", $user_id, $title, $author, $genre, $year);
 
     if ($stmt->execute()) {
