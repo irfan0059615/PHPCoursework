@@ -1,3 +1,20 @@
+<?php
+    session_start();
+    include 'php/db.php';
+
+    $user_id = $_SESSION['user_id'];
+
+    $stmt = $conn->prepare("SELECT * FROM books WHERE user_id=? ORDER BY id DESC");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $books = [];
+    while ($row = $result->fetch_assoc()) {
+        $books[] = $row;
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,12 +39,16 @@
 
             <div class="collapse navbar-collapse" id="navbarContent">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item d-flex align-items-center me-2">
-                        <span class="text-light">Hello, <strong>User</strong></span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-danger btn-sm" href="#">Logout</a>
-                    </li>
+
+                    <?php if ($user): ?>
+                        <li class="nav-item d-flex align-items-center me-2">
+                            <span class="text-light">Hello, <strong><?= htmlspecialchars($user) ?></strong></span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-danger btn-sm" href="php/logout.php">Logout</a>
+                        </li>
+                    <?php endif; ?>
+
                 </ul>
             </div>
 
@@ -50,7 +71,7 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-dark table-striped table-hover mb-0 text-wrap" id="booksTable">
+                    <table class="table table-dark table-striped table-hover mb-0 text-wrap">
                         <thead class="table-secondary text-dark">
                             <tr>
                                 <th style="width:60px">SN</th>
@@ -62,19 +83,37 @@
                                 <th style="width:170px">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="bookList">
+                        <tbody>
+                        <?php if (empty($books)): ?>
                             <tr>
-                                <td>1</td>
-                                <td>The Great Gatsby</td>
-                                <td>F. Scott Fitzgerald</td>
-                                <td>Novel</td>
-                                <td>1925</td>
-                                <td>-</td>
+                                <td colspan="7" class="text-center text-muted py-4">No books found</td>
+                            </tr>
+                        <?php else:
+                            $sn = 1;
+                        ?>
+                            <?php foreach($books as $book): ?>
+                            <tr>
+                                <td><?= $sn++; ?></td>
+                                <td><?= htmlspecialchars($book['title']) ?></td>
+                                <td><?= htmlspecialchars($book['author']) ?></td>
+                                <td><?= htmlspecialchars($book['genre']) ?></td>
+                                <td><?= htmlspecialchars($book['published_year']) ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-light me-1" onclick="editBook(1)" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteBook(1)">Delete</button>
+                                    <?php 
+                                        if (!empty($book['updated_on'])) {
+                                            echo date("d M h:i A", strtotime($book['updated_on']));
+                                        } else {
+                                            echo '-';
+                                        }
+                                    ?>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-light me-1" onclick="editBook(<?= $book['id'] ?>)" data-bs-toggle="modal" data-bs-target="#editModal">Edit</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteBook(<?= $book['id'] ?>)">Delete</button>
                                 </td>
                             </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -85,34 +124,34 @@
     <div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content custom-bg text-light border-secondary">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Book</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Book</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bookForm" onsubmit="event.preventDefault(); addBook();">
+                <div class="modal-body">
+                    <div class="mb-2">
+                        <label for="title" class="form-label">Title</label>
+                        <input id="title" class="form-control form-control-dark" type="text" name="title" placeholder="Title" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="author" class="form-label">Author</label>
+                        <input id="author" class="form-control form-control-dark" type="text" name="author" placeholder="Author">
+                    </div>
+                    <div class="mb-2">
+                        <label for="genre" class="form-label">Genre</label>
+                        <input id="genre" class="form-control form-control-dark" type="text" name="genre" placeholder="Genre">
+                    </div>
+                    <div class="mb-2">
+                        <label for="published_year" class="form-label">Year</label>
+                        <input id="published_year" class="form-control form-control-dark" type="number" name="published_year" placeholder="Year">
+                    </div>
                 </div>
-                <form id="bookForm" onsubmit="event.preventDefault();">
-                    <div class="modal-body">
-                        <div class="mb-2">
-                            <label class="form-label">Title</label>
-                            <input class="form-control form-control-dark" type="text" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Author</label>
-                            <input class="form-control form-control-dark" type="text">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Genre</label>
-                            <input class="form-control form-control-dark" type="text">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Year</label>
-                            <input class="form-control form-control-dark" type="number">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-                        <button class="btn btn-primary" type="submit">Add Book</button>
-                    </div>
-                </form>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Add Book</button>
+                </div>
+            </form>
             </div>
         </div>
     </div>
@@ -120,48 +159,40 @@
     <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content custom-bg text-light border-secondary">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Book</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Book</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editForm" onsubmit="event.preventDefault(); updateBook();">
+                <div class="modal-body">
+                    <input type="hidden" name="id" id="editId">
+                    <div class="mb-2">
+                        <label for="editTitle" class="form-label">Title</label>
+                        <input id="editTitle" class="form-control form-control-dark" type="text" name="title" placeholder="Title" required>
+                    </div>
+                    <div class="mb-2">
+                        <label for="editAuthor" class="form-label">Author</label>
+                        <input id="editAuthor" class="form-control form-control-dark" type="text" name="author" placeholder="Author">
+                    </div>
+                    <div class="mb-2">
+                        <label for="editGenre" class="form-label">Genre</label>
+                        <input id="editGenre" class="form-control form-control-dark" type="text" name="genre" placeholder="Genre">
+                    </div>
+                    <div class="mb-2">
+                        <label for="editYear" class="form-label">Year</label>
+                        <input id="editYear" class="form-control form-control-dark" type="number" name="published_year" placeholder="Year">
+                    </div>
                 </div>
-                <form id="editForm" onsubmit="event.preventDefault();">
-                    <div class="modal-body">
-                        <div class="mb-2">
-                            <label class="form-label">Title</label>
-                            <input class="form-control form-control-dark" type="text" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Author</label>
-                            <input class="form-control form-control-dark" type="text">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Genre</label>
-                            <input class="form-control form-control-dark" type="text">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">Year</label>
-                            <input class="form-control form-control-dark" type="number">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
-                        <button class="btn btn-primary" type="submit">Update Book</button>
-                    </div>
-                </form>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Update Book</button>
+                </div>
+            </form>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        function editBook(id) {
-            console.log("editing book with id: " + id);
-        }
-
-        function deleteBook(id) {
-            console.log("deleting book with id: " + id);
-        }
-    </script>
+    <script src="js/app.js"></script>
 </body>
 </html>
