@@ -86,15 +86,19 @@ async function deleteBook(id) {
 
 function editBook(id) {
     const btn = document.querySelector(`button[onclick="editBook(${id})"]`);
-    if (!btn) return alert('Item not found');
+    if (!btn) {alert('Item not found');return;}
+
     const row = btn.closest('tr');
-    editForm.reset();
-    editForm.elements['id'].value = id;
-    editForm.elements['title'].value = row.children[1].textContent.trim();
-    editForm.elements['author'].value = row.children[2].textContent.trim();
-    editForm.elements['genre'].value = row.children[3].textContent.trim();
-    editForm.elements['published_year'].value = row.children[4].textContent.trim();
-    editModal.show();
+
+    document.getElementById('editId').value = id;
+    document.getElementById('editTitle').value = row.children[1].textContent.trim();
+    document.getElementById('editAuthor').value = row.children[2].textContent.trim();
+    document.getElementById('editGenre').value = row.children[3].textContent.trim();
+    document.getElementById('editYear').value = row.children[4].textContent.trim();
+
+    const modalEl = document.getElementById('editModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
 }
 
 async function updateBook() {
