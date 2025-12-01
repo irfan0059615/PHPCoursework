@@ -1,0 +1,34 @@
+<div class="modal fade" id="bookModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-bg text-light border-secondary">
+        <div class="modal-header">
+            <h5 class="modal-title">Add New Book</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="bookForm" onsubmit="event.preventDefault(); addBook();">
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label for="title" class="form-label">Title</label>
+                    <input id="title" class="form-control form-control-dark" type="text" name="title" placeholder="Title" required>
+                </div>
+                <div class="mb-2">
+                    <label for="author" class="form-label">Author</label>
+                    <input id="author" class="form-control form-control-dark" type="text" name="author" placeholder="Author">
+                </div>
+                <div class="mb-2">
+                    <label for="genre" class="form-label">Genre</label>
+                    <input id="genre" class="form-control form-control-dark" type="text" name="genre" placeholder="Genre">
+                </div>
+                <div class="mb-2">
+                    <label for="published_year" class="form-label">Year</label>
+                    <input id="published_year" class="form-control form-control-dark" type="number" name="published_year" placeholder="Year">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" type="submit">Add Book</button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>

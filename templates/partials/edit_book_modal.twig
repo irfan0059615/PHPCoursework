@@ -1,0 +1,35 @@
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-bg text-light border-secondary">
+        <div class="modal-header">
+            <h5 class="modal-title">Edit Book</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="editForm" onsubmit="event.preventDefault(); updateBook();">
+            <div class="modal-body">
+                <input type="hidden" name="id" id="editId">
+                <div class="mb-2">
+                    <label for="editTitle" class="form-label">Title</label>
+                    <input id="editTitle" class="form-control form-control-dark" type="text" name="title" placeholder="Title" required>
+                </div>
+                <div class="mb-2">
+                    <label for="editAuthor" class="form-label">Author</label>
+                    <input id="editAuthor" class="form-control form-control-dark" type="text" name="author" placeholder="Author">
+                </div>
+                <div class="mb-2">
+                    <label for="editGenre" class="form-label">Genre</label>
+                    <input id="editGenre" class="form-control form-control-dark" type="text" name="genre" placeholder="Genre">
+                </div>
+                <div class="mb-2">
+                    <label for="editYear" class="form-label">Year</label>
+                    <input id="editYear" class="form-control form-control-dark" type="number" name="published_year" placeholder="Year">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" type="submit">Update Book</button>
+            </div>
+        </form>
+        </div>
+    </div>
+</div>
